@@ -1,0 +1,141 @@
+* {
+  box-sizing: border-box;
+  font-family: system-ui, -apple-system, Segoe UI, sans-serif;
+}
+
+body {
+  margin: 0;
+  background: #10141a;
+  color: #f3f4f6;
+}
+
+main {
+  max-width: 720px;
+  margin: 48px auto;
+  padding: 32px;
+  background: #1f2933;
+  border-radius: 12px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+h1 {
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.controls,
+.flash {
+  display: grid;
+  gap: 16px;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.9rem;
+  gap: 8px;
+}
+
+label.checkbox-row {
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+
+label.checkbox-row input[type='checkbox'] {
+  width: 16px;
+  height: 16px;
+}
+
+input[type='file'],
+input[type='text'],
+select {
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #374151;
+  background: #111827;
+  color: inherit;
+}
+
+button {
+  padding: 12px 18px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  background: #2563eb;
+  color: #f8fafc;
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+button:hover:not(:disabled) {
+  background: #1d4ed8;
+}
+
+button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+progress {
+  width: 100%;
+  height: 10px;
+  border-radius: 6px;
+  background: #111827;
+}
+
+progress::-webkit-progress-bar {
+  border-radius: 6px;
+  background: #111827;
+}
+
+progress::-webkit-progress-value {
+  border-radius: 6px;
+  background: linear-gradient(90deg, #2563eb, #60a5fa);
+}
+
+progress::-moz-progress-bar {
+  border-radius: 6px;
+  background: linear-gradient(90deg, #2563eb, #60a5fa);
+}
+
+pre {
+  margin: 0;
+  padding: 18px;
+  background: #111827;
+  border-radius: 8px;
+  max-height: 320px;
+  overflow-y: auto;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  border: 1px solid #1f2937;
+}
+
+.status-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+  gap: 16px;
+}
+
+.status-indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ef4444;
+  flex-shrink: 0;
+  transition: background 0.2s ease;
+}
+
+.status-indicator.connected {
+  background: #10b981;
+}
