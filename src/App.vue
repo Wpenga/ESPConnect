@@ -794,6 +794,8 @@ async function connect() {
   busy.value = true;
   flashProgress.value = 0;
 
+  logBuffer.value = '';
+  partitionTable.value = [];
   appendLog('Requesting serial port access...');
 
   try {
