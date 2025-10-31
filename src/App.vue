@@ -161,6 +161,7 @@
                 @download-all-partitions="handleDownloadAllPartitions"
                 @download-used-flash="handleDownloadUsedFlash"
                 @erase-flash="handleEraseFlash"
+                @cancel-download="handleCancelDownload"
               />
             </v-window-item>
 
@@ -663,6 +664,7 @@ const currentBaud = ref(DEFAULT_ROM_BAUD);
 const baudChangeBusy = ref(false);
 const maintenanceBusy = ref(false);
 const downloadProgress = reactive({ visible: false, value: 0, label: '' });
+const downloadCancelRequested = ref(false);
 const registerAddress = ref('0x0');
 const registerValue = ref('');
 const registerReadResult = ref(null);
@@ -1969,27 +1971,40 @@ async function downloadFlashRegion(offset, length, options = {}) {
     downloadProgress.label = 'Preparing download @ ' + baudLabel + '...';
   }
 
-  const buffer = await loader.value.readFlash(offset, length, (_packet, received, total) => {
-    const progressValue = total > 0 ? Math.min(100, Math.floor((received / total) * 100)) : 0;
-    const progressLabel = total
-      ? 'Downloading ' +
-        displayLabel +
-        ' @ ' +
-        baudLabel +
-        ' — ' +
-        received.toLocaleString() +
-        ' of ' +
-        total.toLocaleString() +
-        ' bytes'
-      : 'Downloading ' + displayLabel + ' @ ' + baudLabel;
-    if (!suppressStatus) {
-      downloadProgress.visible = true;
-      downloadProgress.value = progressValue;
-      downloadProgress.label = progressLabel;
-      flashReadStatusType.value = 'info';
-      flashReadStatus.value = progressLabel;
+  downloadCancelRequested.value = false;
+
+  let buffer;
+  try {
+    buffer = await loader.value.readFlash(offset, length, (_packet, received, total) => {
+      if (downloadCancelRequested.value) {
+        throw new Error('Download cancelled by user');
+      }
+      const progressValue = total > 0 ? Math.min(100, Math.floor((received / total) * 100)) : 0;
+      const progressLabel = total
+        ? 'Downloading ' +
+          displayLabel +
+          ' @ ' +
+          baudLabel +
+          ' — ' +
+          received.toLocaleString() +
+          ' of ' +
+          total.toLocaleString() +
+          ' bytes'
+        : 'Downloading ' + displayLabel + ' @ ' + baudLabel;
+      if (!suppressStatus) {
+        downloadProgress.visible = true;
+        downloadProgress.value = progressValue;
+        downloadProgress.label = progressLabel;
+        flashReadStatusType.value = 'info';
+        flashReadStatus.value = progressLabel;
+      }
+    });
+  } finally {
+    if (downloadCancelRequested.value) {
+      downloadProgress.visible = false;
     }
-  });
+    downloadCancelRequested.value = false;
+  }
 
   const blob = new Blob([buffer], { type: 'application/octet-stream' });
   const baseName =
@@ -2130,8 +2145,13 @@ async function handleDownloadFlash(payload = { mode: 'manual' }) {
     flashReadStatus.value = 'Unsupported download mode.';
   } catch (error) {
     downloadProgress.visible = false;
-    flashReadStatusType.value = 'error';
-    flashReadStatus.value = 'Download failed: ' + (error && error.message ? error.message : error);
+    if (error && error.message === 'Download cancelled by user') {
+      flashReadStatusType.value = 'warning';
+      flashReadStatus.value = 'Download cancelled.';
+    } else {
+      flashReadStatusType.value = 'error';
+      flashReadStatus.value = 'Download failed: ' + (error && error.message ? error.message : error);
+    }
   } finally {
     maintenanceBusy.value = false;
   }
@@ -2159,6 +2179,18 @@ async function handleDownloadAllPartitions() {
 
 async function handleDownloadUsedFlash() {
   await handleDownloadFlash({ mode: 'used-flash' });
+}
+
+function handleCancelDownload() {
+  if (!downloadProgress.visible) {
+    return;
+  }
+  if (!downloadCancelRequested.value) {
+    downloadCancelRequested.value = true;
+    downloadProgress.label = 'Stopping download...';
+    flashReadStatusType.value = 'info';
+    flashReadStatus.value = 'Stopping download...';
+  }
 }
 
 function handleSelectPartition(value) {

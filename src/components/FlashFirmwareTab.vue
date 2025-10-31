@@ -161,17 +161,6 @@
         </v-col>
       </v-row>
       <div class="tools-card__actions">
-        <v-progress-linear
-          v-if="downloadProgress.visible"
-          :model-value="downloadProgress.value"
-          color="primary"
-          height="16"
-          rounded
-          striped
-          class="download-progress"
-        >
-          <strong>{{ downloadProgress.label }}</strong>
-        </v-progress-linear>
         <v-btn
           color="primary"
           variant="tonal"
@@ -317,6 +306,42 @@
       </v-alert>
     </v-card-text>
   </v-card>
+  <v-dialog
+    :model-value="downloadProgress.visible"
+    persistent
+    max-width="420"
+    class="progress-dialog"
+  >
+    <v-card class="progress-dialog__card">
+      <v-card-title class="progress-dialog__title">
+        <v-icon start color="primary">mdi-download</v-icon>
+        Flash download in progress
+      </v-card-title>
+      <v-card-text class="progress-dialog__body">
+        <div class="progress-dialog__label">
+          {{ downloadProgress.label || 'Preparing download...' }}
+        </div>
+        <v-progress-linear
+          :model-value="downloadProgress.value"
+          height="24"
+          color="primary"
+          rounded
+          striped
+        />
+      </v-card-text>
+      <v-card-actions class="progress-dialog__actions">
+        <v-spacer />
+        <v-btn
+          color="secondary"
+          variant="tonal"
+          @click="emit('cancel-download')"
+        >
+          <v-icon start>mdi-stop</v-icon>
+          Stop
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script setup>
@@ -449,6 +474,7 @@ const emit = defineEmits([
   'download-all-partitions',
   'download-used-flash',
   'erase-flash',
+  'cancel-download',
 ]);
 
 function handlePresetChange(value) {
@@ -497,5 +523,30 @@ function handlePresetChange(value) {
 
 .partition-tools__actions {
   justify-content: flex-start;
+}
+
+.progress-dialog__card {
+  padding: 20px;
+}
+
+.progress-dialog__title {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+}
+
+.progress-dialog__body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.progress-dialog__label {
+  font-size: 0.95rem;
+}
+
+.progress-dialog__actions {
+  justify-content: flex-end;
 }
 </style>
