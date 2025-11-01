@@ -2022,6 +2022,13 @@ async function flashFirmware() {
   }
 
   const firmwareLabel = firmwareName.value || 'selected firmware';
+  const activeBaudRaw =
+    transport.value?.baudrate ||
+    currentBaud.value ||
+    Number.parseInt(selectedBaud.value, 10) ||
+    DEFAULT_ROM_BAUD;
+  const flashBaud = Number.isFinite(activeBaudRaw) ? activeBaudRaw : DEFAULT_ROM_BAUD;
+  const flashBaudLabel = flashBaud.toLocaleString() + ' bps';
   const confirmFlash = await showConfirmation({
     title: 'Confirm Flash',
     message:
@@ -2042,7 +2049,7 @@ async function flashFirmware() {
   flashCancelRequested.value = false;
   flashProgressDialog.visible = true;
   flashProgressDialog.value = 0;
-  flashProgressDialog.label = `Preparing ${firmwareLabel}...`;
+  flashProgressDialog.label = `Preparing ${firmwareLabel} @ ${flashBaudLabel}...`;
 
   appendLog(`Flashing ${firmwareLabel} at 0x${offsetNumber.toString(16)}...`);
 
@@ -2070,15 +2077,15 @@ async function flashFirmware() {
         const writtenLabel = written.toLocaleString();
         const totalLabel = total ? total.toLocaleString() : '';
         flashProgressDialog.label = total
-          ? `Flashing ${firmwareLabel} — ${writtenLabel} of ${totalLabel} bytes`
-          : `Flashing ${firmwareLabel} — ${writtenLabel} bytes`;
+          ? `Flashing ${firmwareLabel} — ${writtenLabel} of ${totalLabel} bytes @ ${flashBaudLabel}`
+          : `Flashing ${firmwareLabel} — ${writtenLabel} bytes @ ${flashBaudLabel}`;
       },
     });
 
     await loader.value.after('hard_reset');
     const elapsed = ((performance.now() - startTime) / 1000).toFixed(1);
     flashProgressDialog.value = 100;
-    flashProgressDialog.label = `Flash complete in ${elapsed}s. Finalizing...`;
+    flashProgressDialog.label = `Flash complete in ${elapsed}s @ ${flashBaudLabel}. Finalizing...`;
     appendLog(`Flashing complete in ${elapsed}s. Device rebooted.`);
   } catch (error) {
     if (error?.message === 'Flash cancelled by user') {
