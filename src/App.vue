@@ -23,7 +23,7 @@
           </p>
         </div>
       </v-sheet>
-      <v-list nav density="comfortable" class="app-drawer__list">
+      <v-list nav density="comfortable" >
         <v-list-subheader class="app-drawer__label text-overline text-medium-emphasis">
           Sections
         </v-list-subheader>
@@ -41,7 +41,7 @@
         </v-list-item>
       </v-list>
       <v-divider class="app-drawer__divider" />
-      <v-list density="comfortable" class="app-drawer__list">
+      <v-list density="comfortable">
         <v-list-subheader class="app-drawer__label text-overline text-medium-emphasis">
           Resources
         </v-list-subheader>
