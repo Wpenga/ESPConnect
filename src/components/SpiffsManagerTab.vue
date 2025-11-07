@@ -120,13 +120,6 @@
             prepend-icon="mdi-file-upload"
             :disabled="readOnly || !hasClient || loading || busy || saving"
           />
-          <v-text-field
-            v-model="uploadName"
-            density="comfortable"
-            label="Store as"
-            placeholder="path/to/file.txt"
-            :disabled="readOnly || !hasClient || loading || busy || saving"
-          />
           <v-btn
             color="primary"
             variant="tonal"
@@ -258,13 +251,11 @@ const emit = defineEmits([
 ]);
 
 const uploadFile = ref(null);
-const uploadName = ref('');
 const restoreInput = ref(null);
 
 function submitUpload() {
   if (!uploadFile.value) return;
-  emit('upload-file', { file: uploadFile.value, name: uploadName.value });
-  uploadName.value = '';
+  emit('upload-file', { file: uploadFile.value });
   uploadFile.value = null;
 }
 
@@ -309,7 +300,7 @@ function formatSize(size) {
 
 @media (min-width: 960px) {
   .upload-row {
-    grid-template-columns: 1fr 1fr auto;
+    grid-template-columns: 1fr auto;
     align-items: end;
   }
   .upload-row__cta {
