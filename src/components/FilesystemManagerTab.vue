@@ -1,5 +1,10 @@
 <template>
-  <div class="filesystem-manager">
+  <div
+    class="filesystem-manager"
+    @dragover.prevent="handleDragOver"
+    @dragleave.prevent="handleDragLeave"
+    @drop.prevent="handleDrop"
+  >
     <v-alert
       v-if="error"
       type="error"
