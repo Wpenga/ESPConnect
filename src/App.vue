@@ -308,7 +308,7 @@
           <v-card>
             <v-card-title class="text-h6">
               <v-icon start color="error">mdi-alert-circle</v-icon>
-              Upload Failed
+              File too large
             </v-card-title>
             <v-card-text class="text-body-2">
               {{ spiffsUploadErrorDialog.message || 'Not enough SPIFFS space to store this file.' }}
