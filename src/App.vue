@@ -1082,7 +1082,6 @@ async function loadLittlefsPartition(partition) {
     littlefsState.baselineFiles = littlefsState.files.map(file => ({ ...file }));
     littlefsState.dirty = false;
     littlefsState.backupDone = false;
-    littlefsState.sessionBackupDone = false;
     updateLittlefsUsage(partition);
     const count = littlefsState.files.length;
     littlefsState.status = count === 1 ? 'Loaded 1 file.' : `Loaded ${count} files.`;
@@ -1099,7 +1098,6 @@ async function loadLittlefsPartition(partition) {
       littlefsState.baselineFiles = [];
       littlefsState.dirty = false;
       littlefsState.backupDone = false;
-      littlefsState.sessionBackupDone = false;
       littlefsState.blockCount = 0;
       updateLittlefsUsage(partition);
       littlefsState.error = null;
@@ -1619,7 +1617,6 @@ async function loadFatfsPartition(partition) {
     fatfsState.baselineFiles = fatfsState.files.map(file => ({ ...file }));
     fatfsState.dirty = false;
     fatfsState.backupDone = false;
-    fatfsState.sessionBackupDone = false;
     updateFatfsUsage(partition);
     const count = fatfsState.files.length;
     fatfsState.status = count === 1 ? 'Loaded 1 file.' : `Loaded ${count} files.`;
@@ -1636,7 +1633,6 @@ async function loadFatfsPartition(partition) {
       fatfsState.baselineFiles = [];
       fatfsState.dirty = false;
       fatfsState.backupDone = false;
-      fatfsState.sessionBackupDone = false;
       updateFatfsUsage(partition);
       fatfsState.error = null;
       fatfsState.readOnly = false;
@@ -2408,7 +2404,6 @@ async function loadSpiffsPartition(partition) {
       spiffsState.baselineFiles = [];
       spiffsState.dirty = false;
       spiffsState.backupDone = false;
-      spiffsState.sessionBackupDone = false;
       updateSpiffsUsage();
       spiffsState.error = null;
       spiffsState.readOnly = false;
