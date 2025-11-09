@@ -529,6 +529,10 @@
             </v-card-actions>
           </v-card>
         </v-dialog>
+
+        <v-snackbar v-model="toast.visible" :timeout="toast.timeout" :color="toast.color" location="bottom right">
+          {{ toast.message }}
+        </v-snackbar>
       </v-container>
     </v-main>
   </v-app>
@@ -1230,6 +1234,7 @@ function handleLittlefsUploadSelection(file) {
     littlefsState.uploadBlocked = true;
     littlefsState.uploadBlockedReason = message;
     littlefsState.status = message;
+    showToast(message, { color: 'warning' });
     showUploadError(message);
     return;
   }
@@ -1241,6 +1246,7 @@ async function handleLittlefsUpload({ file }) {
   if (!littlefsState.client) return;
   if (littlefsState.readOnly) {
     littlefsState.status = littlefsState.readOnlyReason || 'LittleFS is read-only.';
+    showToast(littlefsState.status, { color: 'info' });
     return;
   }
   if (littlefsState.uploadBlocked) {
@@ -1252,11 +1258,13 @@ async function handleLittlefsUpload({ file }) {
   }
   if (!file) {
     littlefsState.status = 'Select a file to upload.';
+    showToast(littlefsState.status, { color: 'info' });
     return;
   }
   const targetName = (file.name || '').trim();
   if (!targetName) {
     littlefsState.status = 'Selected file has no name. Rename it and try again.';
+    showToast(littlefsState.status, { color: 'warning' });
     return;
   }
   try {
@@ -1268,6 +1276,7 @@ async function handleLittlefsUpload({ file }) {
     appendLog(`LittleFS staged ${targetName} (${data.length.toLocaleString()} bytes).`, '[debug]');
   } catch (error) {
     littlefsState.error = formatErrorMessage(error);
+    showToast(littlefsState.error, { color: 'error' });
   } finally {
     littlefsState.busy = false;
   }
@@ -1434,6 +1443,7 @@ async function handleLittlefsView(name) {
   const viewInfo = resolveSpiffsViewInfo(name);
   if (!viewInfo) {
     littlefsState.status = 'This file type cannot be previewed. Download it instead.';
+    showToast(littlefsState.status, { color: 'info' });
     return;
   }
   resetViewerMedia();
@@ -1462,6 +1472,7 @@ async function handleLittlefsView(name) {
     }
   } catch (error) {
     spiffsViewerDialog.error = formatErrorMessage(error);
+    showToast(spiffsViewerDialog.error, { color: 'error' });
   } finally {
     spiffsViewerDialog.loading = false;
   }
@@ -1714,6 +1725,7 @@ function handleFatfsUploadSelection(file) {
     fatfsState.uploadBlocked = true;
     fatfsState.uploadBlockedReason = message;
     fatfsState.status = message;
+    showToast(message, { color: 'warning' });
     showUploadError(message);
     return;
   }
@@ -1725,6 +1737,7 @@ async function handleFatfsUpload({ file }) {
   if (!fatfsState.client) return;
   if (fatfsState.readOnly) {
     fatfsState.status = fatfsState.readOnlyReason || 'FATFS is read-only.';
+    showToast(fatfsState.status, { color: 'info' });
     return;
   }
   if (fatfsState.uploadBlocked) {
@@ -1736,11 +1749,13 @@ async function handleFatfsUpload({ file }) {
   }
   if (!file) {
     fatfsState.status = 'Select a file to upload.';
+    showToast(fatfsState.status, { color: 'info' });
     return;
   }
   const targetName = (file.name || '').trim();
   if (!targetName) {
     fatfsState.status = 'Selected file has no name. Rename it and try again.';
+    showToast(fatfsState.status, { color: 'warning' });
     return;
   }
   try {
@@ -1752,6 +1767,7 @@ async function handleFatfsUpload({ file }) {
     appendLog(`FATFS staged ${targetName} (${data.length.toLocaleString()} bytes).`, '[debug]');
   } catch (error) {
     fatfsState.error = formatErrorMessage(error);
+    showToast(fatfsState.error, { color: 'error' });
   } finally {
     fatfsState.busy = false;
   }
@@ -1918,6 +1934,7 @@ async function handleFatfsView(name) {
   const viewInfo = resolveSpiffsViewInfo(name);
   if (!viewInfo) {
     fatfsState.status = 'This file type cannot be previewed. Download it instead.';
+    showToast(fatfsState.status, { color: 'info' });
     return;
   }
   resetViewerMedia();
@@ -1946,6 +1963,7 @@ async function handleFatfsView(name) {
     }
   } catch (error) {
     spiffsViewerDialog.error = formatErrorMessage(error);
+    showToast(spiffsViewerDialog.error, { color: 'error' });
   } finally {
     spiffsViewerDialog.loading = false;
   }
@@ -2509,6 +2527,14 @@ function resetViewerMedia() {
 function showUploadError(message) {
   uploadErrorDialog.message = message || 'Not enough filesystem space to store this file.';
   uploadErrorDialog.visible = true;
+  showToast(uploadErrorDialog.message, { color: 'error', timeout: 6000 });
+}
+
+function showToast(message, options = {}) {
+  toast.message = message;
+  toast.color = options.color || 'warning';
+  toast.timeout = options.timeout ?? 4000;
+  toast.visible = true;
 }
 
 async function handleSpiffsView(name) {
@@ -2516,6 +2542,7 @@ async function handleSpiffsView(name) {
   const viewInfo = resolveSpiffsViewInfo(name);
   if (!viewInfo) {
     spiffsState.status = 'This file type cannot be previewed. Download it instead.';
+    showToast('This file type cannot be previewed. Download it instead.', { color: 'info' });
     return;
   }
   resetViewerMedia();
@@ -2585,6 +2612,7 @@ async function handleSpiffsUpload({ file }) {
   if (!spiffsState.client) return;
   if (spiffsState.readOnly) {
     spiffsState.status = spiffsState.readOnlyReason || 'SPIFFS is read-only.';
+    showToast(spiffsState.status, { color: 'info' });
     return;
   }
   if (spiffsState.uploadBlocked) {
@@ -2596,11 +2624,13 @@ async function handleSpiffsUpload({ file }) {
   }
   if (!file) {
     spiffsState.status = 'Select a file to upload.';
+    showToast(spiffsState.status, { color: 'info' });
     return;
   }
   const targetName = (file.name || '').trim();
   if (!targetName) {
     spiffsState.status = 'Selected file has no name. Rename it and try again.';
+    showToast(spiffsState.status, { color: 'warning' });
     return;
   }
   try {
@@ -2626,6 +2656,8 @@ async function handleSpiffsUpload({ file }) {
     }
     if (isSpaceError || isNameTooLong) {
       showUploadError(friendly);
+    } else {
+      showToast(friendly || 'SPIFFS upload failed.', { color: 'error' });
     }
   } finally {
     spiffsState.busy = false;
@@ -2991,6 +3023,12 @@ const spiffsViewerDialog = reactive({
 const uploadErrorDialog = reactive({
   visible: false,
   message: '',
+});
+const toast = reactive({
+  visible: false,
+  message: '',
+  color: 'warning',
+  timeout: 4000,
 });
 const littlefsBackupDialog = reactive({
   visible: false,
