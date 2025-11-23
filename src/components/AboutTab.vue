@@ -61,10 +61,6 @@
           changes in-memory until you explicitly write them to flash, making it easy to review modifications or revert by
           re-reading the partition.
         </p>
-        <p class="text-medium-emphasis">
-          Built with Vue 3 + Vuetify. Filesystem emulation powered by TypeScript (SPIFFS) and wasm modules (LittleFS,
-          FATFS).
-        </p>
       </v-card-text>
     </v-card>
   </div>
