@@ -4984,9 +4984,7 @@ async function connect() {
     loader.value = new ESPLoader({
       transport: transport.value,
       baudrate: connectBaud,
-      romBaudrate: DEFAULT_ROM_BAUD,
       terminal,
-      enableTracing: DEBUG_SERIAL,
       debugLogging:true
     });
     currentBaud.value = connectBaud;
