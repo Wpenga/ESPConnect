@@ -279,6 +279,7 @@ const emit = defineEmits([
   'navigate',
   'navigate-up',
   'new-folder',
+  'reset-upload-block',
 ]);
 
 const uploadFile = ref(null);
@@ -410,8 +411,10 @@ function handleDrop(event) {
 }
 
 async function processDroppedItems(items, fallbackFiles = []) {
+  emit('reset-upload-block');
   const entryMap = new Map(); // path -> payload
   const filesForSizeCheck = [];
+  let sawDirectory = false;
 
   async function readAllEntries(reader) {
     const out = [];
@@ -445,6 +448,7 @@ async function processDroppedItems(items, fallbackFiles = []) {
       for (const child of entries) {
         await traverseEntry(child, prefix);
       }
+      sawDirectory = true;
     }
   }
 
@@ -462,10 +466,19 @@ async function processDroppedItems(items, fallbackFiles = []) {
   }
 
   // Always merge plain FileList to catch items not exposed via webkit entries
-  for (const file of fallbackFiles) {
-    if (!entryMap.has(file.name)) {
+  if (!sawDirectory && fallbackFiles.length) {
+    entryMap.clear();
+    filesForSizeCheck.length = 0;
+    for (const file of fallbackFiles) {
       entryMap.set(file.name, { file, path: file.name });
       filesForSizeCheck.push({ size: file.size, path: file.name });
+    }
+  } else {
+    for (const file of fallbackFiles) {
+      if (!entryMap.has(file.name)) {
+        entryMap.set(file.name, { file, path: file.name });
+        filesForSizeCheck.push({ size: file.size, path: file.name });
+      }
     }
   }
 

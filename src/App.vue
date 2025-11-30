@@ -117,7 +117,8 @@
                 @download-file="handleLittlefsDownloadFile" @view-file="handleLittlefsView"
                 @validate-upload="handleLittlefsUploadSelection" @upload-file="handleLittlefsUpload"
                 @delete-file="handleLittlefsDelete" @format="handleLittlefsFormat" @save="handleLittlefsSave"
-                @navigate="handleLittlefsNavigate" @navigate-up="handleLittlefsNavigateUp" @new-folder="handleLittlefsNewFolder" />
+                @navigate="handleLittlefsNavigate" @navigate-up="handleLittlefsNavigateUp" @new-folder="handleLittlefsNewFolder"
+                @reset-upload-block="handleLittlefsResetUploadBlock" />
               <DisconnectedState v-else icon="mdi-alpha-l-circle-outline" :min-height="420"
                 subtitle="Connect to an ESP32 with a LittleFS partition to use these tools." />
             </v-window-item>
@@ -1278,6 +1279,11 @@ async function handleLittlefsUpload(payload) {
   } finally {
     littlefsState.busy = false;
   }
+}
+
+function handleLittlefsResetUploadBlock() {
+  littlefsState.uploadBlocked = false;
+  littlefsState.uploadBlockedReason = '';
 }
 
 async function handleLittlefsDelete(path) {

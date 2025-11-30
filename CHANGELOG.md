@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.6-beta
+- LittleFS now supports folder and navigation, proposed in ([issue #31](https://github.com/thelastoutpostworkshop/ESPConnect/issues/31)).
+
 ## 1.0.5
 - Added PWM/LEDC capabilities to Device Info with tooltip context; values are based on chip family lookups. Proposed in ([issue #16](https://github.com/thelastoutpostworkshop/ESPConnect/issues/16)).
 - Flush serial input before handshake and partition reads to avoid stale data when swapping boards.
