@@ -442,7 +442,8 @@ async function processDroppedItems(items, fallbackFiles = []) {
       const reader = entry.createReader();
       const entries = await readAllEntries(reader);
       const prefix = pathPrefix ? `${pathPrefix}/${entry.name}` : entry.name;
-      if (!entries.length) {
+      // always record the directory itself so the parent can create/skip it
+      if (!entryMap.has(prefix)) {
         entryMap.set(prefix, { file: null, path: prefix, isDir: true });
       }
       for (const child of entries) {

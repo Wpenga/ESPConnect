@@ -1222,6 +1222,18 @@ async function performLittlefsUpload(payload) {
   let workingFreeBytes =
     littlefsState.usage?.freeBytes ??
     (partitionSize ? Math.max(partitionSize - usedBytes, 0) : Number.POSITIVE_INFINITY);
+  const derivedIsDir = isDir === true || (!file && !!path);
+  if (derivedIsDir && !file && path) {
+    const targetDir = joinFsPath(littlefsState.currentPath || '/', path);
+    const exists =
+      usageSource.find(entry => entry.path === targetDir && entry.type === 'dir') !== undefined;
+    if (exists) {
+      const msg = `Folder "${targetDir}" already exists.`;
+      showToast(msg, { color: 'warning' });
+      littlefsState.status = msg;
+      return;
+    }
+  }
   console.info('[ESPConnect-LittleFS] upload start', {
     path,
     name: file?.name,
@@ -1235,7 +1247,7 @@ async function performLittlefsUpload(payload) {
   littlefsState.uploadBlocked = false;
   littlefsState.uploadBlockedReason = '';
   if (!file) {
-    if (isDir && path) {
+    if (derivedIsDir && path) {
       await handleLittlefsNewFolder(path);
     }
     return;
