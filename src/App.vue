@@ -99,7 +99,7 @@
                 subtitle="Connect to an ESP32 to browse and edit SPIFFS files." />
             </v-window-item>
 
-              <v-window-item value="littlefs">
+            <v-window-item value="littlefs">
               <LittlefsManagerTab v-if="connected && littleFsAvailable" :partitions="littleFsPartitions"
                 :selected-partition-id="littlefsState.selectedId" :files="littlefsVisibleFiles"
                 :current-path="littlefsState.currentPath" :status="littlefsState.status"
@@ -117,8 +117,8 @@
                 @download-file="handleLittlefsDownloadFile" @view-file="handleLittlefsView"
                 @validate-upload="handleLittlefsUploadSelection" @upload-file="handleLittlefsUpload"
                 @delete-file="handleLittlefsDelete" @format="handleLittlefsFormat" @save="handleLittlefsSave"
-                @navigate="handleLittlefsNavigate" @navigate-up="handleLittlefsNavigateUp" @new-folder="handleLittlefsNewFolder"
-                @reset-upload-block="handleLittlefsResetUploadBlock" />
+                @navigate="handleLittlefsNavigate" @navigate-up="handleLittlefsNavigateUp"
+                @new-folder="handleLittlefsNewFolder" @reset-upload-block="handleLittlefsResetUploadBlock" />
               <DisconnectedState v-else icon="mdi-alpha-l-circle-outline" :min-height="420"
                 subtitle="Connect to an ESP32 with a LittleFS partition to use these tools." />
             </v-window-item>
@@ -496,6 +496,29 @@
             <v-card-actions>
               <v-spacer />
               <v-btn color="primary" variant="text" @click="showBusyDialog = false">
+                Got it
+              </v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
+
+        <v-dialog v-model="showGeneralErrorDialog" width="420">
+          <v-card>
+            <v-card-title class="text-h6">
+              <v-icon start color="error">mdi-alert-circle-outline</v-icon>
+              Processing Error
+            </v-card-title>
+            <v-card-text>
+              <p class="text-body-2">
+                An error occurred while processing information from the device.
+              </p>
+              <p class="text-caption text-medium-emphasis" v-if="lastErrorMessage">
+                Last error: {{ lastErrorMessage }}
+              </p>
+            </v-card-text>
+            <v-card-actions>
+              <v-spacer />
+              <v-btn color="primary" variant="text" @click="showGeneralErrorDialog = false">
                 Got it
               </v-btn>
             </v-card-actions>
@@ -3310,7 +3333,7 @@ const flashProgress = ref(0);
 const flashProgressDialog = reactive({ visible: false, value: 0, label: '' });
 const flashCancelRequested = ref(false);
 const selectedBaud = ref(String(DEFAULT_FLASH_BAUD));
-const baudrateOptions = ['115200', '230400', '460800', '921600','1500000','2000000'];
+const baudrateOptions = ['115200', '230400', '460800', '921600', '1500000', '2000000'];
 const flashOffset = ref('0x0');
 const eraseFlash = ref(false);
 const selectedPreset = ref(null);
@@ -3575,6 +3598,7 @@ const flashSizeBytes = ref(null);
 const showBusyDialog = ref(false);
 const busyDialogMessage = ref('');
 const showBootDialog = ref(false);
+const showGeneralErrorDialog = ref(false);
 const lastErrorMessage = ref('');
 
 const DEFAULT_OFFSET_PRESETS = [
@@ -4961,7 +4985,7 @@ async function startMonitor() {
         monitorAbortController.value = null;
       }
       monitorActive.value = false;
-  }
+    }
   })();
 }
 
@@ -5095,6 +5119,7 @@ async function connect() {
     showBusyDialog.value = false;
     busyDialogMessage.value = '';
     showBootDialog.value = false;
+    showGeneralErrorDialog.value = false;
     currentPort.value = await requestSerialPort(SUPPORTED_VENDORS);
     connectDialogTimer = setTimeout(() => {
       connectDialog.visible = true;
@@ -5138,6 +5163,7 @@ async function connect() {
     });
     connected.value = true;
     appendLog(`Handshake complete with ${chipName}. Collecting device details...`, '[ESPConnect-Debug]');
+
     // if (chip?.CHIP_NAME === 'ESP32-C6' && chip.SPI_REG_BASE === 0x60002000) {
     //   chip.SPI_REG_BASE = 0x60003000;
     //   appendLog(
@@ -5347,6 +5373,7 @@ async function connect() {
     connected.value = true;
     showBusyDialog.value = false;
     showBootDialog.value = false;
+    showGeneralErrorDialog.value = false;
     appendLog(`Connection established. Ready to flash.`);
   } catch (error) {
     if (error?.name === 'AbortError' || error?.name === 'NotFoundError') {
@@ -5358,13 +5385,23 @@ async function connect() {
       busyDialogMessage.value = busyMessage;
       showBusyDialog.value = true;
       showBootDialog.value = false;
-    } else {
+      showGeneralErrorDialog.value = false;
+    } else if (error?.message === "Couldn't sync to ESP. Try resetting.") {
       const message = formatErrorMessage(error);
-      appendLog(`Connection failed: ${message}`, '[error]');
       lastErrorMessage.value = message;
       busyDialogMessage.value = '';
       showBusyDialog.value = false;
       showBootDialog.value = true;
+      showGeneralErrorDialog.value = false;
+    } else {
+      appendLog(`General code error: ${error?.message}`, '[error]');
+      lastErrorMessage.value = error?.message || 'Unknown error';
+      busyDialogMessage.value = '';
+      connectDialog.visible = false;
+      connectDialog.message = '';
+      showBusyDialog.value = false;
+      showBootDialog.value = false;
+      showGeneralErrorDialog.value = true;
     }
     await disconnectTransport();
   } finally {
