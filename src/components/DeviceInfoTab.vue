@@ -128,6 +128,7 @@
 <script setup>
 import { computed } from 'vue';
 import DisconnectedState from './DisconnectedState.vue';
+import {PRIMARY_FACTS} from  '../constants/deviceFacts';
 
 const props = defineProps({
   chipDetails: {
@@ -168,15 +169,7 @@ const hasDistinctDescription = computed(() => {
 const primaryFacts = computed(() => {
   const facts = Array.isArray(details.value?.facts) ? details.value.facts : [];
   if (!facts.length) return [];
-  const preferredOrder = [
-    'Embedded Flash',
-    'Embedded PSRAM',
-    'Flash Device',
-    'CPU Cores',
-    'Max CPU Frequency',
-    'Connection Baud',
-    'USB Bridge',
-  ];
+  const preferredOrder = PRIMARY_FACTS;
   const selected = [];
   const seen = new Set();
 

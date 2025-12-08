@@ -15,6 +15,16 @@ export const FACT_ICONS: Record<string, string> = {
   'PWM/LEDC': 'mdi-waveform',
 };
 
+export const PRIMARY_FACTS = [
+    'Embedded Flash',
+    'Embedded PSRAM',
+    'Flash Device',
+    'Max CPU Frequency',
+    'Connection Baud',
+    'USB Bridge',
+    'CPU Cores',
+  ];
+
 export const FACT_GROUP_CONFIG = [
   {
     title: 'Package & Revision',
