@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <v-app>
     <v-navigation-drawer permanent app elevation="1">
       <v-list>
@@ -7,7 +7,7 @@
       </v-list>
       <v-list nav density="comfortable">
         <v-list-subheader class="app-drawer__label text-overline text-medium-emphasis">
-          Sections
+          {{ t('app.sections') }}
         </v-list-subheader>
         <v-list-item v-for="item in navigationItems" :key="item.value" :value="item.value" :prepend-icon="item.icon"
           :active="activeTab === item.value" :disabled="item.disabled" class="app-drawer__list-item" rounded="lg"
@@ -18,7 +18,7 @@
       <v-divider class="app-drawer__divider" />
       <v-list density="comfortable">
         <v-list-subheader class="app-drawer__label text-overline text-medium-emphasis">
-          Resources
+          {{ t('app.resources') }}
         </v-list-subheader>
         <v-list-item v-for="link in resourceLinks" :key="link.href" :href="link.href" :prepend-icon="link.icon"
           target="_blank" rel="noopener" class="app-drawer__list-item" rounded="lg">
@@ -31,14 +31,14 @@
         <v-btn color="primary" variant="outlined" density="comfortable"
           :disabled="!serialSupported || connected || busy" @click="connect">
           <v-icon start>mdi-usb-flash-drive</v-icon>
-          Connect
+          {{ t('buttons.connect') }}
         </v-btn>
         <v-btn color="error" variant="outlined" density="comfortable" :disabled="!connected || busy"
           @click="disconnect">
           <v-icon start>mdi-close-circle</v-icon>
-          Disconnect
+          {{ t('buttons.disconnect') }}
         </v-btn>
-        <v-select v-model="selectedBaud" :items="baudrateOptions" label="Baud rate" density="compact" variant="outlined"
+        <v-select v-model="selectedBaud" :items="baudrateOptions" :label="t('labels.baudRate')" density="compact" variant="outlined"
           hide-details class="status-select"
           :disabled="busy || flashInProgress || maintenanceBusy || baudChangeBusy || monitorActive" />
         <span v-if="higherBaudrateAvailable">
@@ -55,6 +55,18 @@
         </span>
       </div>
       <v-spacer />
+      <v-select
+        v-model="locale"
+        :items="languages"
+        item-value="value"
+        item-title="label"
+        variant="text"
+        density="compact"
+        hide-details
+        prepend-inner-icon="mdi-translate"
+        @update:model-value="changeLanguage"
+        class="language-select"
+      />
       <v-btn :title="`Switch to ${isDarkTheme ? 'light' : 'dark'} theme`" variant="text" icon size="small"
         @click="toggleTheme">
         <v-icon>{{ themeIcon }}</v-icon>
@@ -76,11 +88,11 @@
       <v-container fluid>
         <v-card elevation="8" class="pa-6">
           <v-alert v-if="!serialSupported" type="error" class="mb-4" variant="tonal" icon="mdi-alert-circle-outline">
-            This browser does not support the Web Serial API. Use Chrome, Edge, or another Chromium-based browser.
+            {{ t('messages.serialNotSupported') }}
           </v-alert>
           <v-alert v-else-if="showSerialMonitorReconnectNotice" type="info" class="mb-4" variant="tonal"
             icon="mdi-console-line">
-            Serial monitor closed — click Connect to re-enter maintenance mode.
+            {{ t('messages.serialMonitorReconnect') }}
           </v-alert>
           <v-window v-model="activeTab" class="app-tab-content">
             <v-window-item value="info">
@@ -216,7 +228,7 @@
             <v-card-title class="text-h6">
               <v-icon start
                 :color="confirmationDialog.destructive ? 'error' : 'warning'">mdi-alert-circle-outline</v-icon>
-              {{ confirmationDialog.title || 'Please confirm' }}
+              {{ confirmationDialog.title || t('dialogs.confirm') }}
             </v-card-title>
             <v-card-text class="text-body-2">
               <div class="confirmation-message">
@@ -226,11 +238,11 @@
             <v-card-actions>
               <v-spacer />
               <v-btn variant="text" @click="resolveConfirmation(false)">
-                {{ confirmationDialog.cancelText || 'Cancel' }}
+                {{ confirmationDialog.cancelText || t('buttons.cancel') }}
               </v-btn>
               <v-btn :color="confirmationDialog.destructive ? 'error' : 'primary'" variant="tonal"
                 @click="resolveConfirmation(true)">
-                {{ confirmationDialog.confirmText || 'Continue' }}
+                {{ confirmationDialog.confirmText || t('buttons.continue') }}
               </v-btn>
             </v-card-actions>
           </v-card>
@@ -616,6 +628,7 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
 import { useTheme } from 'vuetify';
+import { useI18n } from 'vue-i18n';
 import DeviceInfoTab from './components/DeviceInfoTab.vue';
 import FlashFirmwareTab from './components/FlashFirmwareTab.vue';
 import AppsTab from './components/AppsTab.vue';
@@ -3544,45 +3557,45 @@ const partitionTable = ref([]);
 const activeTab = ref('info');
 const sessionLogRef = ref(null);
 const navigationItems = computed(() => [
-  { title: 'Device Info', value: 'info', icon: 'mdi-information-outline', disabled: false },
-  { title: 'Partitions', value: 'partitions', icon: 'mdi-table', disabled: !connected.value },
+  { title: t('navigation.info'), value: 'info', icon: 'mdi-information-outline', disabled: false },
+  { title: t('navigation.partitions'), value: 'partitions', icon: 'mdi-table', disabled: !connected.value },
   {
-    title: 'Apps',
+    title: t('navigation.apps'),
     value: 'apps',
     icon: 'mdi-application',
     disabled: !connected.value || maintenanceNavigationLocked.value,
   },
   {
-    title: 'SPIFFS Tools',
+    title: t('navigation.spiffs'),
     value: 'spiffs',
     icon: 'mdi-folder-wrench',
     disabled:
       !connected.value || !spiffsAvailable.value || maintenanceNavigationLocked.value,
   },
   {
-    title: 'LittleFS Tools',
+    title: t('navigation.littlefs'),
     value: 'littlefs',
     icon: 'mdi-alpha-l-circle-outline',
     disabled:
       !connected.value || !littleFsAvailable.value || maintenanceNavigationLocked.value,
   },
   {
-    title: 'FATFS Tools',
+    title: t('navigation.fatfs'),
     value: 'fatfs',
     icon: 'mdi-alpha-f-circle-outline',
     disabled:
       !connected.value || !fatfsAvailable.value || maintenanceNavigationLocked.value,
   },
   {
-    title: 'Flash Tools',
+    title: t('navigation.flash'),
     value: 'flash',
     icon: 'mdi-chip',
     disabled: !connected.value || maintenanceNavigationLocked.value,
   },
-  { title: 'Serial Monitor', value: 'console', icon: 'mdi-console-line', disabled: false },
-  { title: 'Session Log', value: 'log', icon: 'mdi-clipboard-text-outline', disabled: false },
+  { title: t('navigation.console'), value: 'console', icon: 'mdi-console-line', disabled: false },
+  { title: t('navigation.log'), value: 'log', icon: 'mdi-clipboard-text-outline', disabled: false },
   {
-    title: 'About',
+    title: t('navigation.about'),
     value: 'about',
     icon: 'mdi-information-box-outline',
     disabled: false,
@@ -3645,6 +3658,17 @@ function applyThemeClass(name) {
     document.body.classList.toggle('light-theme', name === 'light');
   }
 }
+
+// 国际化处理
+const { locale, t } = useI18n();
+const languages = [
+  { value: 'zh', label: '中文' },
+  { value: 'en', label: 'English' }
+];
+
+const changeLanguage = (lang) => {
+  locale.value = lang;
+};
 
 watch(
   currentTheme,

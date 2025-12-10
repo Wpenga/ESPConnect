@@ -6,9 +6,9 @@
           <v-icon :size="iconSize">{{ icon }}</v-icon>
         </v-avatar>
         <div class="disconnected-card__text">
-          <div class="disconnected-card__title">{{ title }}</div>
+          <div class="disconnected-card__title">{{ displayTitle }}</div>
           <div class="disconnected-card__subtitle">
-            {{ subtitle }}
+            {{ displaySubtitle }}
           </div>
         </div>
       </v-card-text>
@@ -18,15 +18,18 @@
 
 <script setup>
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const props = defineProps({
   title: {
     type: String,
-    default: 'No device connected',
+    default: undefined,
   },
   subtitle: {
     type: String,
-    default: 'Connect to an ESP32 to continue.',
+    default: undefined,
   },
   icon: {
     type: String,
@@ -52,6 +55,14 @@ const normalizedMinHeight = computed(() => {
     return undefined;
   }
   return typeof value === 'number' ? `${value}px` : value;
+});
+
+const displayTitle = computed(() => {
+  return props.title || t('messages.disconnectedTitle');
+});
+
+const displaySubtitle = computed(() => {
+  return props.subtitle || t('messages.disconnectedSubtitle');
 });
 </script>
 
